@@ -1,0 +1,18 @@
+{
+  "name": "Violão Acordes — DigitaHinos",
+  "short_name": "Violão Acordes",
+  "description": "Acompanhamento dos 480 hinos no violão (batidas e dedilhados) com a melodia do soprano ao fundo: letra e diagramas de acordes.",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b2e3a",
+  "theme_color": "#0b2e3a",
+  "categories": ["music", "education"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
