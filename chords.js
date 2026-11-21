@@ -253,8 +253,11 @@
       if (!o.slash || pcs.indexOf(bass) < 0) bass = root;
       return { t: c[0], d: c[1], root: root, qi: qi, bass: bass };
     });
+    return mergeAdj(raw);
+  }
+  function mergeAdj(list) {
     var merged = [];
-    raw.forEach(function (c) {
+    list.forEach(function (c) {
       var l = merged[merged.length - 1];
       if (l && l.root === c.root && l.qi === c.qi && l.bass === c.bass && Math.abs(l.t + l.d - c.t) < 1) l.d += c.d;
       else merged.push(c);
@@ -262,21 +265,27 @@
     return merged;
   }
 
+  // Acorde com baixo (C/E): só vale forma cuja corda mais grave É o baixo; o nome sempre corresponde ao diagrama.
   function candidates(c, capo, o) {
     var list = [];
-    chordShapes(c.root, c.qi, c.root, capo, o.easy).slice(0, 12).forEach(function (s) {
-      list.push({ sh: s, cost: s.cost + (c.bass !== c.root ? 1.8 : 0) });
+    var base = c.bass !== c.root ? c.bass : c.root;
+    chordShapes(c.root, c.qi, base, capo, o.easy).slice(0, 12).forEach(function (s) {
+      list.push({ sh: s, cost: s.cost });
     });
-    if (c.bass !== c.root) {
-      chordShapes(c.root, c.qi, c.bass, capo, o.easy).slice(0, 12).forEach(function (s) {
-        list.push({ sh: s, cost: s.cost + 0.3 });
-      });
-    }
     return list;
   }
 
   function plan(h, T, capo, o) {
     var chords = buildChords(h, T, o);
+    if (o.slash) {
+      var changed = false;
+      chords.forEach(function (c) {
+        if (c.bass === c.root) return;
+        var sl = chordShapes(c.root, c.qi, c.bass, capo, o.easy), rt = chordShapes(c.root, c.qi, c.root, capo, o.easy);
+        if (!sl.length || (rt.length && sl[0].cost > rt[0].cost + 7)) { c.bass = c.root; changed = true; }
+      });
+      if (changed) chords = mergeAdj(chords);
+    }
     var K = chords.map(function (c) { return candidates(c, capo, o); });
     var dp = [], i, j, pj;
     for (i = 0; i < chords.length; i++) {
@@ -451,9 +460,10 @@
     var outChords = chords.map(function (c, i) {
       var sh = c.sh;
       var held = sh.fretted.map(function (x, k) { return { s: x.s, f: x.f, n: sh.fing[k] }; });
+      var realBass = mod(sh.strings[0].midi, 12);   // o que o diagrama realmente toca no grave
       return {
-        t: c.t, d: c.d, root: c.root, qi: c.qi, bass: c.bass, idx: i, pcs: sh.pcs,
-        name: chordName(c.root, c.qi, c.bass, fifths),
+        t: c.t, d: c.d, root: c.root, qi: c.qi, bass: realBass, idx: i, pcs: sh.pcs,
+        name: chordName(c.root, c.qi, realBass, fifths),
         shape: { strings: sh.strings.map(function (x) { return { s: x.s, f: x.f, midi: x.midi }; }), low: sh.low, fretted: sh.fretted, fing: sh.fing, barre: sh.barre },
         held: held
       };
@@ -584,15 +594,17 @@
     else if (mode === 'original') { for (i = 0; i <= 5; i++) cands.push({ T: 0, capo: i, pen: 2.5 * i }); }
     else { for (i = -6; i <= 5; i++) cands.push({ T: i, capo: 0, pen: 3.5 * Math.abs(i) }); }
     var best = null;
+    var oSel = { easy: true, slash: false, style: style, level: level };   // o tom é escolhido pela facilidade, igual para todos os níveis
     cands.forEach(function (c) {
-      var pl = plan(h, c.T, c.capo, o);
+      var pl = plan(h, c.T, c.capo, oSel);
       var pen = c.pen, hi = melMax + c.T, lo = melMin + c.T;
       if (hi > 81) pen += (hi - 81) * 3;
       if (lo < 55) pen += (55 - lo) * 3;
       var score = pl.cost + pen;
       if (!best || score < best.score) best = { score: score, pl: pl, T: c.T, capo: c.capo };
     });
-    var arr = generate(h, best.T, best.capo, best.pl, o);
+    var finalPlan = (o.easy && !o.slash) ? best.pl : plan(h, best.T, best.capo, o);
+    var arr = generate(h, best.T, best.capo, finalPlan, o);
     arr.score = best.score;
     return arr;
   }
