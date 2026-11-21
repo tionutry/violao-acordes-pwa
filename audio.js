@@ -85,15 +85,25 @@
     return out;
   }
 
-  function makeImpulse(ctx, secs, decay) {
+  // resposta ao impulso de uma sala ao vivo: pré-atraso, reflexões iniciais e cauda difusa que vai escurecendo
+  function makeImpulse(ctx, secs, rt60) {
     var sr = ctx.sampleRate, len = Math.floor(sr * secs);
     var ir = ctx.createBuffer(2, len, sr);
+    var early = [0.011, 0.019, 0.027, 0.036, 0.047, 0.061, 0.078];
     for (var c = 0; c < 2; c++) {
-      var d = ir.getChannelData(c), r = rng(1234 + c * 77), lp = 0;
-      for (var i = 0; i < len; i++) {
-        lp = 0.6 * lp + 0.4 * r();
-        d[i] = lp * Math.pow(1 - i / len, decay) * (i < 200 ? i / 200 : 1);
+      var d = ir.getChannelData(c), r = rng(1234 + c * 77), lp = 0, pre = Math.floor(sr * 0.016);
+      for (var i = pre; i < len; i++) {
+        var t = (i - pre) / sr;
+        var a = 0.30 + 0.62 * Math.min(1, t / (rt60 * 0.9));           // amortecimento de agudos ao longo do tempo
+        lp = a * lp + (1 - a) * r();
+        var env = Math.exp(-6.9 * t / rt60);
+        var fadeIn = Math.min(1, t / 0.012);
+        d[i] = lp * env * fadeIn * 3.2;
       }
+      early.forEach(function (te, k) {
+        var idx = pre + Math.floor(sr * te * (c ? 1.07 : 1));
+        if (idx < len) d[idx] += (k % 2 ? -1 : 1) * 0.5 * Math.pow(0.82, k);
+      });
     }
     return ir;
   }
@@ -101,7 +111,7 @@
   /* ------------------------------------------------------------------ */
   function Synth() {
     this.ctx = null; this.voice = 'nylon'; this.cache = {}; this.strings = {}; this.mstrings = {};
-    this.active = []; this.melVol = 0.6;
+    this.active = []; this.melVol = 0.6; this.reverb = 0.5;
   }
   Synth.prototype.init = function () {
     if (this.ctx) return;
@@ -116,7 +126,8 @@
     this.comp = ctx.createDynamicsCompressor();
     this.comp.threshold.value = -16; this.comp.knee.value = 18; this.comp.ratio.value = 3; this.comp.attack.value = 0.005; this.comp.release.value = 0.25;
     this.master = ctx.createGain(); this.master.gain.value = 0.9;
-    this.rev = ctx.createConvolver(); this.rev.buffer = makeImpulse(ctx, 1.4, 2.6);
+    this.rev = ctx.createConvolver(); this.rev.buffer = makeImpulse(ctx, 4.0, 3.0);
+    this.revPre = ctx.createGain(); this.revPre.gain.value = 1;
     this.wet = ctx.createGain(); this.dry = ctx.createGain();
     this.bus.connect(this.f1); this.f1.connect(this.f2); this.f2.connect(this.f3); this.f3.connect(this.comp);
     // melodia: passa por um timbre próprio e vai direto ao compressor
@@ -129,6 +140,7 @@
     for (var i = 0; i < nl; i++) nd[i] = r();
     this.noiseBuf = nb;
     this.setVoice(this.voice);
+    this.applyReverb();
   };
   Synth.prototype.setVoice = function (v) {
     this.voice = v;
@@ -137,13 +149,24 @@
       this.f1.frequency.value = 110; this.f1.gain.value = 3.5; this.f1.Q.value = 1.1;
       this.f2.frequency.value = 2600; this.f2.gain.value = 2.5; this.f2.Q.value = 0.9;
       this.f3.frequency.value = 6000; this.f3.gain.value = 1.5;
-      this.wet.gain.value = 0.16; this.dry.gain.value = 0.95;
     } else {
       this.f1.frequency.value = 95; this.f1.gain.value = 3.5; this.f1.Q.value = 1.2;
       this.f2.frequency.value = 210; this.f2.gain.value = 2.0; this.f2.Q.value = 1.0;
       this.f3.frequency.value = 4500; this.f3.gain.value = -3.5;
-      this.wet.gain.value = 0.2; this.dry.gain.value = 0.95;
     }
+    this.applyReverb();
+  };
+  // v: 0..1 (quantidade de reverb / eco da sala)
+  Synth.prototype.setReverb = function (v) {
+    this.reverb = Math.max(0, Math.min(1, v));
+    this.applyReverb();
+  };
+  Synth.prototype.applyReverb = function () {
+    if (!this.ctx) return;
+    var v = this.reverb, k = this.voice === 'aco' ? 0.85 : 1;
+    var t = this.ctx.currentTime;
+    this.wet.gain.setTargetAtTime(0.1 + v * 1.7 * k, t, 0.03);
+    this.dry.gain.setTargetAtTime(1.0 - v * 0.16, t, 0.03);
   };
   Synth.prototype.setMelVol = function (v) {
     this.melVol = v;

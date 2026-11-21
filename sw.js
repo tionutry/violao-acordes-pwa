@@ -1,6 +1,6 @@
 /* Service worker — cache offline do aplicativo.
  * Ao publicar uma nova versão, mude VERSION para forçar atualização. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = 'violao-acordes-' + VERSION;
 const FILES = [
   './', 'index.html', 'app.css', 'app.js', 'chords.js', 'audio.js', 'sheet.js', 'guitar.js',

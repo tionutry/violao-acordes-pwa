@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var DEF = { voice: 'nylon', inst: 'violino', style: 'batida', level: 'facil', tone: 'facil', verse: 'all', melVol: 60, speed: 100, last: 0 };
+  var DEF = { voice: 'nylon', inst: 'violino', style: 'batida', level: 'facil', tone: 'facil', verse: 'all', melVol: 60, reverb: 50, speed: 100, last: 0 };
   var INST_LABEL = { violino: 'Violino', flauta: 'Flauta', violao: 'Violão' };
   var S = {};
   var DATA = null, hymns = [];
@@ -82,7 +82,7 @@
       sheet.build(1, vlist);
       var guitar = new GuitarView($('guitarWrap'), S.voice, Math.max(12, arr.maxFret + 1));
       guitar.setCapo(arr.capo); guitar.setStyle(S.style);
-      synth.setMelVol(S.melVol / 100);
+      synth.setMelVol(S.melVol / 100); synth.setReverb(S.reverb / 100);
       var player = new GuitarAudio.Player(synth);
       player.rate = S.speed / 100; player.inst = S.inst;
       player.load(arr, h, S.verse);
@@ -198,6 +198,7 @@
     document.querySelectorAll('#segStyle button').forEach(function (b) { b.onclick = function () { S.style = b.getAttribute('data-s'); save(); applyInst(); }; });
     document.querySelectorAll('#segLevel button').forEach(function (b) { b.onclick = function () { S.level = b.getAttribute('data-l'); save(); applyInst(); }; });
     $('rngMel').oninput = function () { S.melVol = +this.value; $('outMel').textContent = this.value + '%'; save(); if (synth) synth.setMelVol(S.melVol / 100); };
+    $('rngRev').oninput = function () { S.reverb = +this.value; $('outRev').textContent = this.value + '%'; save(); if (synth) synth.setReverb(S.reverb / 100); };
     $('pInst').onchange = function () { S.inst = this.value; save(); applyInst(); if (cur) { cur.player.setInstrument(S.inst); cur.sheet.opts.instLabel = INST_LABEL[S.inst]; } };
     $('pStyle').onchange = function () { S.style = this.value; save(); applyInst(); if (cur) reopen(); };
     $('pLevel').onchange = function () { S.level = this.value; save(); applyInst(); if (cur) reopen(); };
@@ -239,6 +240,7 @@
   function initSettingsUi() {
     applyVoice(); applyInst();
     $('selTone').value = S.tone; $('selVerse').value = S.verse;
+    $('rngRev').value = S.reverb; $('outRev').textContent = S.reverb + '%';
     $('rngMel').value = S.melVol; $('outMel').textContent = S.melVol + '%';
     $('rngSpeed').value = S.speed; $('outSpeed').textContent = S.speed + '%';
     if (S.last && hymns[S.last - 1]) {
