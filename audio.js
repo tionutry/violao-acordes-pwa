@@ -13,6 +13,7 @@
     aco: { t60ref: 3.4, gamma: 0.5, t60min: 1.0, t60max: 6.5, S: 0.3, exFc: 7500, beta: 0.12, gain: 0.8, click: 0.18 }
   };
 
+  var MEL_SCALE = 0.96; // 100% no controle = 1,6x o nível padrão anterior
   function mtof(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 
   // PRNG determinístico para reproduzir sempre o mesmo timbre por nota
@@ -111,7 +112,7 @@
   /* ------------------------------------------------------------------ */
   function Synth() {
     this.ctx = null; this.voice = 'nylon'; this.cache = {}; this.strings = {}; this.mstrings = {};
-    this.active = []; this.melVol = 0.6; this.reverb = 0.5;
+    this.active = []; this.melVol = 1.0; this.reverb = 0.5;
   }
   Synth.prototype.init = function () {
     if (this.ctx) return;
@@ -119,7 +120,7 @@
     this.ctx = new AC({ latencyHint: 'interactive' });
     var ctx = this.ctx;
     this.bus = ctx.createGain(); this.bus.gain.value = 0.9;               // violão (acompanhamento)
-    this.mbus = ctx.createGain(); this.mbus.gain.value = this.melVol;     // violino / flauta
+    this.mbus = ctx.createGain(); this.mbus.gain.value = this.melVol * MEL_SCALE;     // violino / flauta
     this.f1 = ctx.createBiquadFilter(); this.f1.type = 'peaking';
     this.f2 = ctx.createBiquadFilter(); this.f2.type = 'peaking';
     this.f3 = ctx.createBiquadFilter(); this.f3.type = 'highshelf';
@@ -134,7 +135,11 @@
     this.mEq = ctx.createBiquadFilter(); this.mEq.type = 'peaking'; this.mEq.frequency.value = 1800; this.mEq.gain.value = 1.5; this.mEq.Q.value = 0.8;
     this.mbus.connect(this.mEq); this.mEq.connect(this.comp);
     this.comp.connect(this.dry); this.comp.connect(this.rev); this.rev.connect(this.wet);
-    this.dry.connect(this.master); this.wet.connect(this.master); this.master.connect(ctx.destination);
+    this.dry.connect(this.master); this.wet.connect(this.master);
+    // limitador final: permite volumes altos da melodia sem distorcer
+    this.limiter = ctx.createDynamicsCompressor();
+    this.limiter.threshold.value = -2; this.limiter.knee.value = 0; this.limiter.ratio.value = 20; this.limiter.attack.value = 0.002; this.limiter.release.value = 0.12;
+    this.master.connect(this.limiter); this.limiter.connect(ctx.destination);
     // ruído (sopro da flauta / arco do violino)
     var nl = ctx.sampleRate * 2, nb = ctx.createBuffer(1, nl, ctx.sampleRate), nd = nb.getChannelData(0), r = rng(4242);
     for (var i = 0; i < nl; i++) nd[i] = r();
@@ -170,7 +175,7 @@
   };
   Synth.prototype.setMelVol = function (v) {
     this.melVol = v;
-    if (this.mbus) this.mbus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.02);
+    if (this.mbus) this.mbus.gain.setTargetAtTime(v * MEL_SCALE, this.ctx.currentTime, 0.02);
   };
   Synth.prototype.buffer = function (midi) {
     var key = this.voice + midi;
@@ -310,7 +315,7 @@
     var src = ctx.createBufferSource();
     src.buffer = this.buffer(midi);
     var g = ctx.createGain();
-    g.gain.value = Math.max(0.05, Math.min(1.2, vel * this.melVol * 2.1));
+    g.gain.value = Math.max(0.05, Math.min(6.5, vel * this.melVol * MEL_SCALE * 2.0));
     src.connect(g); g.connect(this.bus);
     var prev = this.mstrings.m;
     if (prev && prev.stopAt > when) {

@@ -191,7 +191,7 @@
     info.push(ts0[0] + '/' + ts0[1] + ' · ♩ = ' + arr.minfo[0].tempo);
     el('text', { x: 74, y: 124, 'font-family': SERIF, 'font-size': 27, 'font-style': 'italic', fill: INK2 }, hd, info.join('   •   '));
     el('text', { x: W - 72, y: 84, 'text-anchor': 'end', 'font-family': SERIF, 'font-size': 36, 'font-weight': 'bold', fill: ACCENT }, hd,
-      (arr.style === 'batida' ? 'Batida' : 'Dedilhado') + ' · ' + ({ facil: 'Fácil', dificil: 'Difícil', misto: 'Misto' })[arr.level]);
+      (arr.style === 'batida' ? 'Batida' : 'Dedilhado') + ' · ' + ({ facil: 'Simples', dificil: 'Completa', misto: 'Misto' })[arr.level]);
     el('text', { x: W - 72, y: 124, 'text-anchor': 'end', 'font-family': SERIF, 'font-size': 24, fill: INK2 }, hd,
       (opts.voiceLabel || '') + ' · melodia: ' + (opts.instLabel || ''));
 

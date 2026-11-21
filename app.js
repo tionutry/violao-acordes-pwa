@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var DEF = { voice: 'nylon', inst: 'violino', style: 'batida', level: 'facil', tone: 'facil', verse: 'all', melVol: 60, reverb: 50, speed: 100, last: 0 };
+  var DEF = { voice: 'nylon', inst: 'violino', style: 'batida', level: 'facil', tone: 'facil', verse: 'all', melVol: 100, melVer: 2, reverb: 50, speed: 100, last: 0 };
   var INST_LABEL = { violino: 'Violino', flauta: 'Flauta', violao: 'Violão' };
   var S = {};
   var DATA = null, hymns = [];
@@ -14,6 +14,7 @@
     var o = {};
     try { o = JSON.parse(localStorage.getItem('va-settings') || '{}'); } catch (e) { }
     S = Object.assign({}, DEF, o);
+    if (S.melVer !== 2) { S.melVol = 100; S.melVer = 2; } // nova escala do volume da melodia
   }
   function save() { try { localStorage.setItem('va-settings', JSON.stringify(S)); } catch (e) { } }
 
@@ -197,7 +198,9 @@
     document.querySelectorAll('#segInst button').forEach(function (b) { b.onclick = function () { S.inst = b.getAttribute('data-i'); save(); applyInst(); }; });
     document.querySelectorAll('#segStyle button').forEach(function (b) { b.onclick = function () { S.style = b.getAttribute('data-s'); save(); applyInst(); }; });
     document.querySelectorAll('#segLevel button').forEach(function (b) { b.onclick = function () { S.level = b.getAttribute('data-l'); save(); applyInst(); }; });
-    $('rngMel').oninput = function () { S.melVol = +this.value; $('outMel').textContent = this.value + '%'; save(); if (synth) synth.setMelVol(S.melVol / 100); };
+    function setMel(v) { S.melVol = +v; $('rngMel').value = v; $('pMel').value = v; $('outMel').textContent = v + '%'; save(); if (synth) synth.setMelVol(S.melVol / 100); }
+    $('rngMel').oninput = function () { setMel(this.value); };
+    $('pMel').oninput = function () { setMel(this.value); };
     $('rngRev').oninput = function () { S.reverb = +this.value; $('outRev').textContent = this.value + '%'; save(); if (synth) synth.setReverb(S.reverb / 100); };
     $('pInst').onchange = function () { S.inst = this.value; save(); applyInst(); if (cur) { cur.player.setInstrument(S.inst); cur.sheet.opts.instLabel = INST_LABEL[S.inst]; } };
     $('pStyle').onchange = function () { S.style = this.value; save(); applyInst(); if (cur) reopen(); };
@@ -241,7 +244,7 @@
     applyVoice(); applyInst();
     $('selTone').value = S.tone; $('selVerse').value = S.verse;
     $('rngRev').value = S.reverb; $('outRev').textContent = S.reverb + '%';
-    $('rngMel').value = S.melVol; $('outMel').textContent = S.melVol + '%';
+    $('rngMel').value = S.melVol; $('pMel').value = S.melVol; $('outMel').textContent = S.melVol + '%';
     $('rngSpeed').value = S.speed; $('outSpeed').textContent = S.speed + '%';
     if (S.last && hymns[S.last - 1]) {
       $('btnContinue').hidden = false;

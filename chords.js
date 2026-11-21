@@ -110,7 +110,7 @@
     });
     return sym.join(' ');
   }
-  var LEVEL_NAME = { facil: 'Fácil', dificil: 'Difícil', misto: 'Misto' };
+  var LEVEL_NAME = { facil: 'Simples', dificil: 'Completa', misto: 'Misto' };
   var STYLE_NAME = { batida: 'Batida', dedilhado: 'Dedilhado' };
 
   /* ---------- dedos da mão esquerda ---------- */

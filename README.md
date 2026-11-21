@@ -7,21 +7,21 @@ PWA estático: publique a pasta no GitHub Pages (ou qualquer hospedagem) e insta
 - Removidos: pauta (VexFlow), tablatura e opções Fingerstyle.
 - Folha 16:9 só com **letra + diagramas de acordes** alinhados à sílaba onde o acorde começa.
 - **Melodia (soprano) ao fundo**: Violino, Flauta ou Violão (escolha do usuário, volume ajustável).
-- **Acompanhamento**: Batida ou Dedilhado, cada um em 3 versões: **Fácil**, **Difícil** e **Misto**
+- **Acompanhamento**: Batida ou Dedilhado, cada um em 3 versões: **Simples** (fácil), **Completa** (difícil) e **Misto**
   (o Misto alterna compasso a compasso a versão fácil e a difícil; o último compasso é um acorde final).
 
 ## Batidas e dedilhados
 **Batida** (↓ palhetada para baixo, ↑ para cima). Cada troca de acorde começa sempre com ↓.
 
 Compassos simples (2/2, 2/4, 3/4, 4/4, 3/2) — a batida acompanha o ritmo da melodia, nota por nota:
-- **Difícil:** cada nota é subdividida em movimentos de semicolcheia ↓↑↓↑… (começando em ↓).
+- **Completa:** cada nota é subdividida em movimentos de semicolcheia ↓↑↓↑… (começando em ↓).
   Ex.: hino 1 → Cris ↓↑↓↑ · to ↓↑ · meu ↓↑ · Mes ↓↑↓↑ · tre ↓↑↓↑
-- **Fácil:** nota curta (colcheia) ↓↑; nota maior um ↓ por tempo. Ex.: Cris ↓ · to ↓↑ · meu ↓↑ · Mes ↓ · tre ↓
+- **Simples:** nota curta (colcheia) ↓↑; nota maior um ↓ por tempo. Ex.: Cris ↓ · to ↓↑ · meu ↓↑ · Mes ↓ · tre ↓
 - **Misto:** como o fácil, mas a última nota de cada compasso é subdividida como no difícil.
 
 Compassos compostos (6/8, 9/8, 12/8, 6/4, 9/4) — cada tempo é um grupo de 3 pulsos:
-- **Fácil:** ↓ em cada pulso (1↓ 2↓ 3↓ 4↓ 5↓ 6↓)
-- **Difícil:** por grupo ↓↑ ↓↑ ↓ (4 semicolcheias + 1 colcheia)
+- **Simples:** ↓ em cada pulso (1↓ 2↓ 3↓ 4↓ 5↓ 6↓)
+- **Completa:** por grupo ↓↑ ↓↑ ↓ (4 semicolcheias + 1 colcheia)
 - **Misto:** ↓ em cada pulso e ↓↑ no fim de cada grupo (1↓ 2↓ 3↓↑ 4↓ 5↓ 6↓↑)
 
 Em andamento rápido (acima de ♩=88) o movimento passa de semicolcheia para colcheia.
@@ -29,7 +29,7 @@ Em andamento rápido (acima de ♩=88) o movimento passa de semicolcheia para co
 **Dedilhado** (p/q polegar no baixo e baixo alternado · i 3ª corda · m 2ª · a 1ª). Em toda troca de acorde
 o primeiro toque é o baixo (p). Padrões por compasso em `chords.js` → `PAT.dedilhado`:
 
-| Compasso | Fácil | Difícil |
+| Compasso | Simples | Completa |
 |---|---|---|
 | 4/4 e 2/2 | p i m i | p i m a q i m i |
 | 2/4 | p i m i | p i m a q i m i (semicolcheias) |
@@ -43,7 +43,7 @@ O **Misto** do dedilhado alterna compasso a compasso o fácil e o difícil. O ú
 
 ## Acordes
 `chords.js` gera as formas no braço (todas as cordas soando, dedos e pestana), escolhe o tom mais
-confortável (ou mantém o original com capotraste) e usa baixo invertido (C/E) nos níveis Difícil e Misto.
+confortável (ou mantém o original com capotraste) e usa baixo invertido (C/E) nos níveis Completa e Misto.
 
 ## Arquivos
 index.html · app.css · app.js · chords.js (acordes/batidas/dedilhados) · audio.js (violão, violino, flauta, player)

@@ -65,7 +65,7 @@
       <button data-i="flauta"><b>Flauta</b></button>
       <button data-i="violao"><b>Violão</b></button>
     </div>
-    <div class="range-row"><span class="mini">Volume da melodia</span><input type="range" id="rngMel" min="10" max="100" step="5" value="60"><output id="outMel">60%</output></div>
+    <div class="range-row"><span class="mini">Volume da melodia</span><input type="range" id="rngMel" min="10" max="300" step="10" value="100"><output id="outMel">100%</output></div>
 
     <div class="range-row"><span class="mini">Reverb (eco da sala)</span><input type="range" id="rngRev" min="0" max="100" step="5" value="50"><output id="outRev">50%</output></div>
 
@@ -75,9 +75,9 @@
       <button data-s="dedilhado"><b>Dedilhado</b><small>p i m a nas cordas</small></button>
     </div>
     <div class="seg3" id="segLevel">
-      <button data-l="facil"><b>Fácil</b><small>simples</small></button>
-      <button data-l="dificil"><b>Difícil</b><small>completa</small></button>
-      <button data-l="misto"><b>Misto</b><small>alterna os dois</small></button>
+      <button data-l="facil"><b>Simples</b><small>fácil</small></button>
+      <button data-l="dificil"><b>Completa</b><small>difícil</small></button>
+      <button data-l="misto"><b>Misto</b><small>simples + completa</small></button>
     </div>
     <p class="foot" id="patHelp">Cada fórmula de compasso (4/4, 3/4, 6/8, 2/4, 9/8, 12/8…) tem sua batida e seu dedilhado nas 3 versões.</p>
 
@@ -135,8 +135,9 @@
       <span class="mini tone"><button id="tDown" class="ctl s">−</button><span id="toneLbl">Tom</span><button id="tUp" class="ctl s">+</button></span>
       <label class="mini">Estrofe <select id="pVerse"></select></label>
       <label class="mini">Melodia <select id="pInst"><option value="violino">Violino</option><option value="flauta">Flauta</option><option value="violao">Violão</option></select></label>
+      <label class="mini">Vol. melodia <input type="range" id="pMel" min="10" max="300" step="10" value="100" style="width:110px;vertical-align:middle"></label>
       <label class="mini">Ritmo <select id="pStyle"><option value="batida">Batida</option><option value="dedilhado">Dedilhado</option></select></label>
-      <label class="mini">Nível <select id="pLevel"><option value="facil">Fácil</option><option value="dificil">Difícil</option><option value="misto">Misto</option></select></label>
+      <label class="mini">Nível <select id="pLevel"><option value="facil">Simples</option><option value="dificil">Completa</option><option value="misto">Misto</option></select></label>
     </div>
   </footer>
   <button id="exitClean" class="exit-clean" hidden aria-label="Sair do modo vídeo">✕</button>
